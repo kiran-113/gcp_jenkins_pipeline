@@ -18,7 +18,7 @@ pipeline {
                 script {
                     withEnv(["GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}"]) {
                         sh 'gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}'
-                        sh 'gcloud config set project your-gcp-project-id'
+                        sh 'gcloud config set project my-first-gcp-instance-323404'
                     }
                 }
             }
