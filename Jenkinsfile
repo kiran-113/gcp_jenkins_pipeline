@@ -1,69 +1,46 @@
-pipeline {
+pipeline{
     agent any
-
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('jenkins-gcp-credentials') // GCP credentials for Jenkins
-        PROJECT_ID = 'my-first-gcp-instance-323404'
-    }
+        CLOUDSDK_CORE_PROJECT='my-first-gcp-instance-323404' 
+        
+  }
+    stages{
 
-    stages {
         stage('Checkout') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Setup') {
-            steps {
-                script {
-                    // Authenticate with Google Cloud
-                    sh '''
-                    gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-                    gcloud auth configure-docker
-                    gcloud config set project $PROJECT_ID
-                    '''
-                }
-            }
-        }
-
-        stage('Impersonate Service Account') {
-            steps {
-                script {
-                    // Impersonate the service account
-                    sh '''
-                    gcloud auth print-access-token --impersonate-service-account=impersonated-terraform-sa@my-first-gcp-instance-323404.iam.gserviceaccount.com > access_token.txt
-                    export ACCESS_TOKEN=$(cat access_token.txt)
-                    '''
-                }
+                git branch: 'main', url: 'https://github.com/kiran-113/gcp_jenkins_pipeline.git'
             }
         }
 
         stage('Terraform Init') {
             steps {
                 script {
-                    // Use the access token for Terraform authentication
-                    sh """
-                    terraform init
-                    export GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN
-                    terraform plan
-                    """
+                    sh 'terraform init'
                 }
             }
         }
-
-        stage('Apply Terraform') {
+        
+        stage('Terraform Plan') {
             steps {
                 script {
-                    // Apply changes
-                    sh "terraform apply -auto-approve"
+                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
-    }
 
-    post {
-        cleanup {
-            sh "rm -f access_token.txt"
+        stage('Manual Approval') {
+            steps {
+                input "Approve?"
+            }
+        }
+     
+        stage('Terraform Apply') {
+            steps {
+                script {
+                    sh 'terraform apply tfplan'
+                }
+            }
         }
     }
 }
+     
