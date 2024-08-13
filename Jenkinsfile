@@ -1,9 +1,9 @@
 pipeline{
     agent any
     environment {
-        CLOUDSDK_CORE_PROJECT='my-first-gcp-instance-323404' 
-        
-  }
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key')
+    }
+	
     stages{
 
         stage('Checkout') {
